@@ -1,5 +1,7 @@
-const APP_VERSION = 'v1.2';
-const EFFECTIVE_TIME = '2026-05-06 11:10 Asia/Taipei';
+const APP_VERSION = 'v1.3';
+const EFFECTIVE_TIME = '2026-05-06 11:30 Asia/Taipei';
+const DEFAULT_CUSTOM_RULES_PATH = './rules/custom-rules.json';
+const DEFAULT_PATTERN_RULES_PATH = './rules/pattern-rules.json';
 
 const sampleEmail = `Hi team,
 
@@ -7,22 +9,18 @@ Please help check the issue reported by user john.doe@example.com.
 The device IP is 192.168.10.25 and backup server is 10.0.0.8.
 The serial number is SN1234567890.
 The log file is error_report_2026.txt.
-The Windows path is C:\\Users\\TestUser\\Documents\\error_report_2026.txt.
-The Linux path is /var/log/system/error.log.
+The Windows path is "C:\\Users\\Test User\\Documents\\error_report_2026.txt".
+The Linux path is /var/log/system/error.log;
 The macOS path is /Users/testuser/Desktop/report.txt.
+The archive path is /opt/backups/report.tar.gz.
 The Mantis ID is 943464.
 The firmware version is v7.2.11 build6634.
+The fallback version is R1.2.3 and patch version 7.2.
 
 Please update FG-123G, fg-3500g, FG-3501G, FG-300xG, FG-350ABG and FG-350XYG status for FLEX.
 Also verify model fg-3000g and customer ACME.
 
 Thanks.`;
-
-const presetPatternRules = [
-  { pattern: 'FG-350xG', replacement: 'MODEL-350X' },
-  { pattern: 'FG-300xG', replacement: 'MODEL-300X' },
-  { pattern: 'FG-350*G', replacement: 'MODEL-350-FAMILY' }
-];
 
 const maskRules = [
   {
@@ -42,12 +40,12 @@ const maskRules = [
   },
   {
     type: 'PATH',
-    pattern: /(?:[A-Za-z]:\\(?:[^\\\r\n]+\\)*[^\\\r\n\s]+|\/(?:[^\s/:]+\/)+[^\s]+|\/Users\/(?:[^\/\s]+\/)+[^\s]+)/g,
-    normalize: (value) => value.trim()
+    pattern: /(?:"[A-Za-z]:\\(?:[^\\\r\n"]+\\)*[^\\\r\n"]+"|[A-Za-z]:\\(?:[^\\\r\n]+\\)*[^\\\r\n\s]+|\/(?:[^\s/:]+\/)+[^\s]+|\/Users\/(?:[^\/\s]+\/)+[^\s]+)/g,
+    normalize: (value) => value.trim().replace(/^"|"$/g, '')
   },
   {
     type: 'FILE',
-    pattern: /\b[A-Za-z0-9._-]+\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?)\b/gi,
+    pattern: /\b[A-Za-z0-9._-]+\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?|tar\.gz)\b/gi,
     normalize: (value) => value.trim().toLowerCase()
   },
   {
@@ -57,7 +55,7 @@ const maskRules = [
   },
   {
     type: 'VERSION',
-    pattern: /\b(?:v?\d+(?:\.\d+){1,3}(?:\s*build\s*\d+)?)\b/gi,
+    pattern: /\b(?:v?\d+(?:\.\d+){1,3}(?:[-\s_]*build\s*\d+)?|R\d+(?:\.\d+){1,3}|build\s*\d+)\b/gi,
     normalize: (value) => value.trim().toLowerCase().replace(/\s+/g, ' ')
   }
 ];
@@ -73,6 +71,10 @@ const elements = {
   addPatternBtn: document.getElementById('addPatternBtn'),
   exportRulesBtn: document.getElementById('exportRulesBtn'),
   importRulesFile: document.getElementById('importRulesFile'),
+  toggleCustomRulesBtn: document.getElementById('toggleCustomRulesBtn'),
+  togglePatternRulesBtn: document.getElementById('togglePatternRulesBtn'),
+  customRulesPanel: document.getElementById('customRulesPanel'),
+  patternRulesPanel: document.getElementById('patternRulesPanel'),
   customRules: document.getElementById('customRules'),
   patternRules: document.getElementById('patternRules'),
   mappingTableBody: document.getElementById('mappingTableBody'),
@@ -89,10 +91,10 @@ let latestMappingEntries = [];
 
 initialize();
 
-function initialize() {
+async function initialize() {
   renderMetaInfo();
   attachEvents();
-  resetRuleEditors();
+  await loadDefaultRules();
 }
 
 function renderMetaInfo() {
@@ -111,6 +113,49 @@ function attachEvents() {
   elements.importRulesFile.addEventListener('change', importRules);
   elements.mappingTypeFilter.addEventListener('change', applyMappingFilters);
   elements.mappingSearch.addEventListener('input', applyMappingFilters);
+  elements.toggleCustomRulesBtn.addEventListener('click', () => togglePanel(elements.customRulesPanel, elements.toggleCustomRulesBtn, 'Custom Rules / 自訂規則'));
+  elements.togglePatternRulesBtn.addEventListener('click', () => togglePanel(elements.patternRulesPanel, elements.togglePatternRulesBtn, 'Pattern Rules / 型號規則'));
+}
+
+async function loadDefaultRules() {
+  resetRuleEditors();
+
+  const customDefaults = await loadJsonFile(DEFAULT_CUSTOM_RULES_PATH, []);
+  const patternDefaults = await loadJsonFile(DEFAULT_PATTERN_RULES_PATH, []);
+
+  customDefaults.forEach((rule) => addCustomRuleRow(rule.source || '', rule.label || ''));
+  patternDefaults.forEach((rule) => addPatternRuleRow(rule.pattern || '', rule.label || ''));
+}
+
+async function loadJsonFile(path, fallbackValue) {
+  try {
+    const response = await fetch(path);
+    if (!response.ok) {
+      return fallbackValue;
+    }
+    return await response.json();
+  } catch (_error) {
+    if (path === DEFAULT_CUSTOM_RULES_PATH) {
+      return [
+        { source: 'FG-123G', label: 'MODEL-A' },
+        { source: 'FLEX', label: 'FACTORY-A' }
+      ];
+    }
+    if (path === DEFAULT_PATTERN_RULES_PATH) {
+      return [
+        { pattern: 'FG-350xG', label: 'MODEL-350X' },
+        { pattern: 'FG-300xG', label: 'MODEL-300X' },
+        { pattern: 'FG-350*G', label: 'MODEL-350-FAMILY' }
+      ];
+    }
+    return fallbackValue;
+  }
+}
+
+function togglePanel(panel, button, labelBase) {
+  const isCollapsed = panel.classList.contains('collapsed');
+  panel.classList.toggle('collapsed', !isCollapsed);
+  button.textContent = isCollapsed ? `Hide ${labelBase}` : `Show ${labelBase}`;
 }
 
 function handleMask() {
@@ -215,9 +260,11 @@ function applyAutoRules(text, state) {
 
 function replacePathsWithFileAwareness(text, rule, state) {
   return text.replace(rule.pattern, (match) => {
-    const cleanedMatch = stripTrailingPunctuation(match.trim());
-    const trailing = match.trim().slice(cleanedMatch.length);
-    const splitPath = splitPathAndTrailingFile(cleanedMatch);
+    const trimmed = match.trim();
+    const cleanedMatch = stripTrailingPunctuation(trimmed);
+    const trailing = trimmed.slice(cleanedMatch.length);
+    const unquoted = cleanedMatch.replace(/^"|"$/g, '');
+    const splitPath = splitPathAndTrailingFile(unquoted);
 
     if (!splitPath.fileName) {
       const normalizedValue = rule.normalize ? rule.normalize(cleanedMatch) : cleanedMatch;
@@ -241,7 +288,7 @@ function splitPathAndTrailingFile(pathValue) {
   const separator = pathValue.slice(separatorIndex, separatorIndex + 1);
   const fileName = pathValue.slice(separatorIndex + 1);
 
-  if (!/\.[A-Za-z0-9]{1,8}$/.test(fileName)) {
+  if (!/\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?|tar\.gz)$/i.test(fileName)) {
     return { directory: pathValue, fileName: '', separator: '' };
   }
 
@@ -304,7 +351,7 @@ function renderMappingTable(entries) {
     .join('');
 }
 
-function clearAll() {
+async function clearAll() {
   elements.inputText.value = '';
   elements.outputText.value = '';
   elements.mappingTypeFilter.value = 'ALL';
@@ -312,11 +359,10 @@ function clearAll() {
   latestMappingEntries = [];
   elements.mappingTableBody.innerHTML = '<tr><td colspan="3" class="empty">No mapping generated yet.</td></tr>';
   elements.statusMessage.textContent = '';
-  resetRuleEditors();
+  await loadDefaultRules();
 }
 
 function loadSample() {
-  clearAll();
   elements.inputText.value = sampleEmail;
   setStatus('Sample email loaded with fake data.');
 }
@@ -342,10 +388,6 @@ function resetRuleEditors() {
   elements.patternRules.innerHTML = '';
   customRuleCount = 0;
   patternRuleCount = 0;
-
-  addCustomRuleRow('FG-123G', 'MODEL-A');
-  addCustomRuleRow('FLEX', 'FACTORY-A');
-  presetPatternRules.forEach((rule) => addPatternRuleRow(rule.pattern, rule.replacement));
 }
 
 function addCustomRuleRow(source = '', label = '') {
@@ -499,10 +541,7 @@ function importRules(event) {
 }
 
 function applyImportedRules(data) {
-  elements.customRules.innerHTML = '';
-  elements.patternRules.innerHTML = '';
-  customRuleCount = 0;
-  patternRuleCount = 0;
+  resetRuleEditors();
 
   const customRules = Array.isArray(data.customRules) ? data.customRules : [];
   const patternRules = Array.isArray(data.patternRules) ? data.patternRules : [];

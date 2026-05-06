@@ -50,21 +50,25 @@ body {
   color: var(--muted);
 }
 
-.meta-strip {
+.meta-strip,
+.toggle-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+  align-items: center;
 }
 
 .meta-chip,
-.badge {
+.badge,
+.link-chip {
   background: #dbeafe;
   color: #1e40af;
   border-radius: 999px;
   padding: 8px 12px;
   font-weight: 700;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .panel {
@@ -81,6 +85,11 @@ body {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
+  margin-top: 10px;
+}
+
+.collapsed {
+  display: none;
 }
 
 .panel-grid {
@@ -89,12 +98,12 @@ body {
   gap: 16px;
 }
 
-.narrow-gap {
-  gap: 12px;
-}
-
 .full-width {
   grid-column: 1 / -1;
+}
+
+.no-top-margin {
+  margin-top: 0;
 }
 
 label {
@@ -230,7 +239,8 @@ th {
   }
 
   button,
-  .file-button {
+  .file-button,
+  .link-chip {
     width: 100%;
     text-align: center;
   }

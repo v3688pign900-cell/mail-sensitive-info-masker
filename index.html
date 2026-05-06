@@ -10,10 +10,10 @@
   <main class="app-shell">
     <header class="hero">
       <div>
-        <h1>Mail Sensitive Info Masker v1.2</h1>
+        <h1>Mail Sensitive Info Masker v1.3</h1>
         <p>Mask sensitive values in email text locally inside your browser.</p>
         <div class="meta-strip">
-          <span id="appVersion" class="meta-chip">Version: v1.2</span>
+          <span id="appVersion" class="meta-chip">Version: v1.3</span>
           <span id="effectiveTime" class="meta-chip">Effective: -</span>
         </div>
       </div>
@@ -38,9 +38,25 @@
       <p id="statusMessage" class="status full-width" aria-live="polite"></p>
     </section>
 
-    <section class="panel panel-grid narrow-gap">
-      <section class="sub-panel">
-        <div class="panel-header">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Rule Panels</h2>
+          <p class="hint">Default rules live in repo JSON files. Use the toggle buttons to view or edit them in the browser.</p>
+        </div>
+        <div class="actions compact-actions">
+          <button id="exportRulesBtn" type="button">Export Rules / 匯出規則</button>
+          <label class="file-button" for="importRulesFile">Import Rules / 匯入規則</label>
+          <input id="importRulesFile" type="file" accept="application/json,.json,text/plain" hidden>
+        </div>
+      </div>
+
+      <div class="toggle-bar">
+        <button id="toggleCustomRulesBtn" type="button">Show Custom Rules / 顯示自訂規則</button>
+        <a class="link-chip" href="./rules/custom-rules.json" target="_blank" rel="noopener">GitHub-editable Custom Rules JSON</a>
+      </div>
+      <section id="customRulesPanel" class="sub-panel collapsed">
+        <div class="panel-header no-top-margin">
           <div>
             <h2>Custom Rules</h2>
             <p class="hint">Exact string replacement. Runs before automatic masking. Case-insensitive.</p>
@@ -50,18 +66,17 @@
         <div id="customRules" class="custom-rules"></div>
       </section>
 
-      <section class="sub-panel">
-        <div class="panel-header">
+      <div class="toggle-bar">
+        <button id="togglePatternRulesBtn" type="button">Show Pattern Rules / 顯示型號規則</button>
+        <a class="link-chip" href="./rules/pattern-rules.json" target="_blank" rel="noopener">GitHub-editable Pattern Rules JSON</a>
+      </div>
+      <section id="patternRulesPanel" class="sub-panel collapsed">
+        <div class="panel-header no-top-margin">
           <div>
             <h2>Pattern Rules</h2>
             <p class="hint">Support `x` for one alphanumeric character and `*` for multiple alphanumeric characters.</p>
           </div>
-          <div class="actions compact-actions">
-            <button id="addPatternBtn" type="button">Add Pattern Rule / 新增型號規則</button>
-            <button id="exportRulesBtn" type="button">Export Rules / 匯出規則</button>
-            <label class="file-button" for="importRulesFile">Import Rules / 匯入規則</label>
-            <input id="importRulesFile" type="file" accept="application/json,.json,text/plain" hidden>
-          </div>
+          <button id="addPatternBtn" type="button">Add Pattern Rule / 新增型號規則</button>
         </div>
         <div id="patternRules" class="custom-rules"></div>
       </section>
