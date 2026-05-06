@@ -1,5 +1,21 @@
 [
   {
+    "pattern": "FortiGate *F",
+    "label": "MODEL-FORTIGATE-FULL-F"
+  },
+  {
+    "pattern": "FortiGate *G",
+    "label": "MODEL-FORTIGATE-FULL-G"
+  },
+  {
+    "pattern": "FG-*F",
+    "label": "MODEL-FORTIGATE-SHORT-F"
+  },
+  {
+    "pattern": "FG-*G",
+    "label": "MODEL-FORTIGATE-SHORT-G"
+  },
+  {
     "pattern": "FG-350xG",
     "label": "MODEL-350X"
   },

@@ -9,44 +9,33 @@ Mail Sensitive Info Masker is a browser-only web tool for masking sensitive valu
 - Review the masked result and mapping table on screen
 - Copy the masked result safely for external use
 
-## Usage
+## v1.6 Highlights
 
-1. Open `index.html` in a browser, or open the GitHub Pages page.
-2. Paste email content into the original text area.
-3. Use toggle buttons to open Custom Rules or Pattern Rules only when needed.
-4. Optionally edit repo JSON rule files directly on GitHub.
-5. Optionally import or export local rule templates.
-6. Click `Mask / 遮罩轉換`.
-7. Review the masked result and mapping table.
-8. Use type filter or search box to review mappings.
+- Built-in FortiGate masking starter rules
+- Supports both full product names and short model names
+- Keeps previous wildcard model rule support
+- Includes FortiGate model reference file in repo
 
-## v1.3 Highlights
+## FortiGate Rule Strategy
 
-- Repo-based default rule JSON files
-- Toggle buttons for Custom Rules and Pattern Rules panels
-- More path/version edge case handling
-- GitHub-editable rule file links on the page
+This version adds default pattern rules for FortiGate naming styles:
 
-## GitHub-editable Rule Files
+- `FortiGate *F` → `MODEL-FORTIGATE-FULL-F`
+- `FortiGate *G` → `MODEL-FORTIGATE-FULL-G`
+- `FG-*F` → `MODEL-FORTIGATE-SHORT-F`
+- `FG-*G` → `MODEL-FORTIGATE-SHORT-G`
 
-These files are now part of the repository and can be edited directly in GitHub:
+This means you do not need to create one rule for every FortiGate model if your goal is only masking.
+
+## When You Need One-by-One Rules
+
+Use one-by-one custom rules only if you must preserve model differences after masking.
+
+## Repo Rule Files
 
 - `rules/custom-rules.json`
 - `rules/pattern-rules.json`
-
-After editing those files in GitHub and refreshing the page from GitHub Pages, the updated defaults can be used as repo-managed rule references.
-
-## Rule Template Import / Export
-
-- Export saves current exact and pattern rules to a local JSON file
-- Import loads rules from a local JSON file into the current page
-- No rule template is uploaded anywhere
-
-## Pattern Rules
-
-- `x` means one alphanumeric wildcard character
-- `*` means multiple alphanumeric wildcard characters
-- Matching is case-insensitive
+- `rules/fortigate-models-reference.json`
 
 ## Security Statement
 
