@@ -1,0 +1,15 @@
+*.log
+*.txt
+!README.md
+private/
+internal/
+sample_internal/
+real_email/
+mapping/
+sensitive/
+*.eml
+*.msg
+*.pst
+*.ost
+result.txt
+mapping_table.txt

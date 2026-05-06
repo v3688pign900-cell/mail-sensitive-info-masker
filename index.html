@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mail Sensitive Info Masker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <h1>Mail Sensitive Info Masker</h1>
+      <p>Mask sensitive values in email text locally inside your browser.</p>
+    </header>
+
+    <section class="panel">
+      <label for="inputText">Original Email Content</label>
+      <textarea id="inputText" rows="14" placeholder="Paste email content here..."></textarea>
+      <div class="actions">
+        <button id="maskBtn" type="button">Mask / 遮罩轉換</button>
+        <button id="copyBtn" type="button">Copy Result / 複製結果</button>
+        <button id="clearBtn" type="button">Clear / 清除</button>
+        <button id="sampleBtn" type="button">Load Sample / 載入範例</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <label for="outputText">Masked Result</label>
+      <textarea id="outputText" rows="14" readonly placeholder="Masked result will appear here..."></textarea>
+      <p id="statusMessage" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Custom Rules</h2>
+        <button id="addRuleBtn" type="button">Add Custom Rule / 新增自訂替換</button>
+      </div>
+      <p class="hint">Custom rules run before automatic masking and exist only in current page memory.</p>
+      <div id="customRules" class="custom-rules"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Mapping Table</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Original Value</th>
+              <th>Masked Label</th>
+            </tr>
+          </thead>
+          <tbody id="mappingTableBody">
+            <tr>
+              <td colspan="3" class="empty">No mapping generated yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
