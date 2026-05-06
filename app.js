@@ -1,5 +1,5 @@
-const APP_VERSION = 'v1.4';
-const EFFECTIVE_TIME = '2026-05-06 13:19 Asia/Taipei';
+const APP_VERSION = 'v1.5';
+const EFFECTIVE_TIME = '2026-05-06 13:22 Asia/Taipei';
 
 const FALLBACK_CUSTOM_RULES = [
   { source: 'FG-123G', label: 'MODEL-A' },
@@ -78,15 +78,25 @@ const elements = {
   copyBtn: document.getElementById('copyBtn'),
   clearBtn: document.getElementById('clearBtn'),
   sampleBtn: document.getElementById('sampleBtn'),
+  maskBtnMobile: document.getElementById('maskBtnMobile'),
+  copyBtnMobile: document.getElementById('copyBtnMobile'),
+  moreBtnMobile: document.getElementById('moreBtnMobile'),
+  clearBtnMobile: document.getElementById('clearBtnMobile'),
+  sampleBtnMobile: document.getElementById('sampleBtnMobile'),
   addRuleBtn: document.getElementById('addRuleBtn'),
   addPatternBtn: document.getElementById('addPatternBtn'),
   exportRulesBtn: document.getElementById('exportRulesBtn'),
   importRulesFile: document.getElementById('importRulesFile'),
   toggleCustomRulesBtn: document.getElementById('toggleCustomRulesBtn'),
   togglePatternRulesBtn: document.getElementById('togglePatternRulesBtn'),
+  toggleRulesPanelBtn: document.getElementById('toggleRulesPanelBtn'),
+  toggleMappingBtn: document.getElementById('toggleMappingBtn'),
   toggleMetaBtn: document.getElementById('toggleMetaBtn'),
   customRulesPanel: document.getElementById('customRulesPanel'),
   patternRulesPanel: document.getElementById('patternRulesPanel'),
+  rulesContainer: document.getElementById('rulesContainer'),
+  mappingPanel: document.getElementById('mappingPanel'),
+  mobileMorePanel: document.getElementById('mobileMorePanel'),
   footerMeta: document.getElementById('footerMeta'),
   customRules: document.getElementById('customRules'),
   patternRules: document.getElementById('patternRules'),
@@ -120,6 +130,11 @@ function attachEvents() {
   elements.copyBtn.addEventListener('click', copyResult);
   elements.clearBtn.addEventListener('click', clearAll);
   elements.sampleBtn.addEventListener('click', loadSample);
+  if (elements.maskBtnMobile) elements.maskBtnMobile.addEventListener('click', handleMask);
+  if (elements.copyBtnMobile) elements.copyBtnMobile.addEventListener('click', copyResult);
+  if (elements.clearBtnMobile) elements.clearBtnMobile.addEventListener('click', clearAll);
+  if (elements.sampleBtnMobile) elements.sampleBtnMobile.addEventListener('click', loadSample);
+  if (elements.moreBtnMobile) elements.moreBtnMobile.addEventListener('click', toggleMobileMore);
   elements.addRuleBtn.addEventListener('click', () => addCustomRuleRow('', ''));
   elements.addPatternBtn.addEventListener('click', () => addPatternRuleRow('', ''));
   elements.exportRulesBtn.addEventListener('click', exportRules);
@@ -128,6 +143,8 @@ function attachEvents() {
   elements.mappingSearch.addEventListener('input', applyMappingFilters);
   elements.toggleCustomRulesBtn.addEventListener('click', () => togglePanel(elements.customRulesPanel, elements.toggleCustomRulesBtn, 'Custom Rules'));
   elements.togglePatternRulesBtn.addEventListener('click', () => togglePanel(elements.patternRulesPanel, elements.togglePatternRulesBtn, 'Pattern Rules'));
+  elements.toggleRulesPanelBtn.addEventListener('click', () => togglePanel(elements.rulesContainer, elements.toggleRulesPanelBtn, 'Rules Panel'));
+  elements.toggleMappingBtn.addEventListener('click', () => togglePanel(elements.mappingPanel, elements.toggleMappingBtn, 'Mapping'));
   if (elements.toggleMetaBtn) {
     elements.toggleMetaBtn.addEventListener('click', toggleFooterMeta);
   }
@@ -158,6 +175,12 @@ function toggleFooterMeta() {
   const isOpen = elements.footerMeta.classList.contains('open');
   elements.footerMeta.classList.toggle('open', !isOpen);
   elements.toggleMetaBtn.textContent = isOpen ? 'Info' : 'Hide Info';
+}
+
+function toggleMobileMore() {
+  const isOpen = elements.mobileMorePanel.classList.contains('open');
+  elements.mobileMorePanel.classList.toggle('open', !isOpen);
+  elements.moreBtnMobile.textContent = isOpen ? 'More' : 'Hide';
 }
 
 function handleMask() {

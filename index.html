@@ -24,68 +24,85 @@
         <label for="outputText">Masked Result</label>
         <textarea id="outputText" rows="14" readonly placeholder="Masked result will appear here..."></textarea>
       </div>
-      <div class="actions full-width simple-actions">
+      <div class="actions full-width simple-actions desktop-actions">
         <button id="maskBtn" type="button">Mask</button>
         <button id="copyBtn" type="button">Copy</button>
         <button id="clearBtn" type="button">Clear</button>
         <button id="sampleBtn" type="button">Sample</button>
       </div>
+      <div class="actions full-width simple-actions mobile-actions">
+        <button id="maskBtnMobile" type="button">Mask</button>
+        <button id="copyBtnMobile" type="button">Copy</button>
+        <button id="moreBtnMobile" type="button">More</button>
+      </div>
+      <div id="mobileMorePanel" class="mobile-more collapsed">
+        <button id="clearBtnMobile" type="button">Clear</button>
+        <button id="sampleBtnMobile" type="button">Sample</button>
+      </div>
       <p id="statusMessage" class="status full-width" aria-live="polite"></p>
     </section>
 
-    <section class="panel simple-panel">
+    <section class="panel simple-panel rule-shell">
       <div class="panel-header compact-header">
         <div>
           <h2>Rules</h2>
-          <p class="hint">Open only when you need to review or edit rules.</p>
+          <p class="hint">Open only when needed.</p>
         </div>
-        <div class="actions compact-actions">
+        <button id="toggleRulesPanelBtn" type="button">Rules Panel</button>
+      </div>
+
+      <div id="rulesContainer" class="collapsed">
+        <div class="actions compact-actions compact-top-actions">
           <button id="exportRulesBtn" type="button">Export</button>
           <label class="file-button" for="importRulesFile">Import</label>
           <input id="importRulesFile" type="file" accept="application/json,.json,text/plain" hidden>
         </div>
-      </div>
 
-      <div class="toggle-bar compact-toggle-bar">
-        <button id="toggleCustomRulesBtn" type="button">Custom Rules</button>
-        <button id="togglePatternRulesBtn" type="button">Pattern Rules</button>
-      </div>
-
-      <section id="customRulesPanel" class="sub-panel collapsed">
-        <div class="panel-header no-top-margin compact-header">
-          <div>
-            <h2>Custom Rules</h2>
-            <p class="hint">Exact string replacement.</p>
-          </div>
-          <div class="actions compact-actions">
-            <button id="addRuleBtn" type="button">Add</button>
-            <a class="link-chip desktop-only-inline" href="./rules/custom-rules.json" target="_blank" rel="noopener">custom-rules.json</a>
-          </div>
+        <div class="toggle-bar compact-toggle-bar">
+          <button id="toggleCustomRulesBtn" type="button">Custom Rules</button>
+          <button id="togglePatternRulesBtn" type="button">Pattern Rules</button>
         </div>
-        <div id="customRules" class="custom-rules"></div>
-      </section>
 
-      <section id="patternRulesPanel" class="sub-panel collapsed">
-        <div class="panel-header no-top-margin compact-header">
-          <div>
-            <h2>Pattern Rules</h2>
-            <p class="hint">Use `x` or `*` wildcard.</p>
+        <section id="customRulesPanel" class="sub-panel collapsed">
+          <div class="panel-header no-top-margin compact-header">
+            <div>
+              <h2>Custom Rules</h2>
+              <p class="hint">Exact string replacement.</p>
+            </div>
+            <div class="actions compact-actions">
+              <button id="addRuleBtn" type="button">Add</button>
+              <a class="link-chip desktop-only-inline" href="./rules/custom-rules.json" target="_blank" rel="noopener">custom-rules.json</a>
+            </div>
           </div>
-          <div class="actions compact-actions">
-            <button id="addPatternBtn" type="button">Add</button>
-            <a class="link-chip desktop-only-inline" href="./rules/pattern-rules.json" target="_blank" rel="noopener">pattern-rules.json</a>
+          <div id="customRules" class="custom-rules"></div>
+        </section>
+
+        <section id="patternRulesPanel" class="sub-panel collapsed">
+          <div class="panel-header no-top-margin compact-header">
+            <div>
+              <h2>Pattern Rules</h2>
+              <p class="hint">Use `x` or `*` wildcard.</p>
+            </div>
+            <div class="actions compact-actions">
+              <button id="addPatternBtn" type="button">Add</button>
+              <a class="link-chip desktop-only-inline" href="./rules/pattern-rules.json" target="_blank" rel="noopener">pattern-rules.json</a>
+            </div>
           </div>
-        </div>
-        <div id="patternRules" class="custom-rules"></div>
-      </section>
+          <div id="patternRules" class="custom-rules"></div>
+        </section>
+      </div>
     </section>
 
     <section class="panel simple-panel">
       <div class="panel-header compact-header">
         <div>
           <h2>Mapping</h2>
-          <p class="hint">Filter or search the result mapping.</p>
+          <p class="hint">Open only when you need to review mapping.</p>
         </div>
+        <button id="toggleMappingBtn" type="button">Mapping</button>
+      </div>
+
+      <div id="mappingPanel" class="collapsed">
         <div class="table-tools compact-tools">
           <select id="mappingTypeFilter">
             <option value="ALL">All Types</option>
@@ -100,22 +117,22 @@
           </select>
           <input id="mappingSearch" type="text" placeholder="Search mapping...">
         </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Original Value</th>
-              <th>Masked Label</th>
-            </tr>
-          </thead>
-          <tbody id="mappingTableBody">
-            <tr>
-              <td colspan="3" class="empty">No mapping generated yet.</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Original Value</th>
+                <th>Masked Label</th>
+              </tr>
+            </thead>
+            <tbody id="mappingTableBody">
+              <tr>
+                <td colspan="3" class="empty">No mapping generated yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 

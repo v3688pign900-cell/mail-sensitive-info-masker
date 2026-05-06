@@ -60,7 +60,8 @@ body {
   padding: 12px;
 }
 
-.sub-panel {
+.sub-panel,
+.mobile-more {
   background: var(--subpanel);
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -139,13 +140,6 @@ select:focus {
   margin-top: 10px;
 }
 
-.compact-header,
-.compact-tools,
-.compact-toggle-bar,
-.simple-actions {
-  gap: 8px;
-}
-
 .actions {
   justify-content: flex-start;
 }
@@ -210,6 +204,7 @@ button:hover,
 
 .table-wrap {
   overflow-x: auto;
+  margin-top: 8px;
 }
 
 table {
@@ -235,12 +230,24 @@ th {
   color: var(--muted);
 }
 
-.mobile-only-inline {
+.mobile-only-inline,
+.mobile-actions {
   display: none;
 }
 
-.desktop-only-inline {
+.desktop-only-inline,
+.desktop-actions {
   display: inline-flex;
+}
+
+.mobile-more {
+  display: none;
+}
+
+.mobile-more.open {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 @media (max-width: 920px) {
@@ -254,12 +261,22 @@ th {
     grid-template-columns: 1fr;
   }
 
-  .desktop-only-inline {
+  .desktop-only-inline,
+  .desktop-actions {
     display: none;
   }
 
-  .mobile-only-inline {
-    display: inline-flex;
+  .mobile-only-inline,
+  .mobile-actions {
+    display: flex;
+  }
+
+  .mobile-actions {
+    gap: 8px;
+  }
+
+  .mobile-actions button {
+    width: calc(33.333% - 6px);
   }
 
   .collapsed-mobile {
@@ -272,8 +289,11 @@ th {
     align-items: stretch;
   }
 
-  button,
-  .file-button {
+  .mobile-more button,
+  .file-button,
+  #toggleRulesPanelBtn,
+  #toggleMappingBtn,
+  #toggleMetaBtn {
     width: 100%;
     text-align: center;
   }
