@@ -10,8 +10,12 @@
   <main class="app-shell">
     <header class="hero">
       <div>
-        <h1>Mail Sensitive Info Masker v1.1</h1>
+        <h1>Mail Sensitive Info Masker v1.2</h1>
         <p>Mask sensitive values in email text locally inside your browser.</p>
+        <div class="meta-strip">
+          <span id="appVersion" class="meta-chip">Version: v1.2</span>
+          <span id="effectiveTime" class="meta-chip">Effective: -</span>
+        </div>
       </div>
       <div class="badge">Local-only / Offline-ready</div>
     </header>
@@ -34,30 +38,56 @@
       <p id="statusMessage" class="status full-width" aria-live="polite"></p>
     </section>
 
-    <section class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>Custom Rules</h2>
-          <p class="hint">Exact string replacement. Runs before automatic masking. Case-insensitive.</p>
+    <section class="panel panel-grid narrow-gap">
+      <section class="sub-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Custom Rules</h2>
+            <p class="hint">Exact string replacement. Runs before automatic masking. Case-insensitive.</p>
+          </div>
+          <button id="addRuleBtn" type="button">Add Custom Rule / 新增自訂替換</button>
         </div>
-        <button id="addRuleBtn" type="button">Add Custom Rule / 新增自訂替換</button>
-      </div>
-      <div id="customRules" class="custom-rules"></div>
+        <div id="customRules" class="custom-rules"></div>
+      </section>
+
+      <section class="sub-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Pattern Rules</h2>
+            <p class="hint">Support `x` for one alphanumeric character and `*` for multiple alphanumeric characters.</p>
+          </div>
+          <div class="actions compact-actions">
+            <button id="addPatternBtn" type="button">Add Pattern Rule / 新增型號規則</button>
+            <button id="exportRulesBtn" type="button">Export Rules / 匯出規則</button>
+            <label class="file-button" for="importRulesFile">Import Rules / 匯入規則</label>
+            <input id="importRulesFile" type="file" accept="application/json,.json,text/plain" hidden>
+          </div>
+        </div>
+        <div id="patternRules" class="custom-rules"></div>
+      </section>
     </section>
 
     <section class="panel">
       <div class="panel-header">
         <div>
-          <h2>Model Pattern Rules</h2>
-          <p class="hint">Use pattern style like FG-350xG. The x wildcard matches one alphanumeric character, so one rule can cover many model variants.</p>
+          <h2>Mapping Table</h2>
+          <p class="hint">Filter by type or search original / masked values.</p>
         </div>
-        <button id="addPatternBtn" type="button">Add Pattern Rule / 新增型號規則</button>
+        <div class="table-tools">
+          <select id="mappingTypeFilter">
+            <option value="ALL">All Types</option>
+            <option value="CUSTOM">CUSTOM</option>
+            <option value="EMAIL">EMAIL</option>
+            <option value="IP">IP</option>
+            <option value="SN">SN</option>
+            <option value="PATH">PATH</option>
+            <option value="FILE">FILE</option>
+            <option value="ISSUE">ISSUE</option>
+            <option value="VERSION">VERSION</option>
+          </select>
+          <input id="mappingSearch" type="text" placeholder="Search mapping table...">
+        </div>
       </div>
-      <div id="patternRules" class="custom-rules"></div>
-    </section>
-
-    <section class="panel">
-      <h2>Mapping Table</h2>
       <div class="table-wrap">
         <table>
           <thead>

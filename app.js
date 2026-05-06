@@ -1,3 +1,6 @@
+const APP_VERSION = 'v1.2';
+const EFFECTIVE_TIME = '2026-05-06 11:10 Asia/Taipei';
+
 const sampleEmail = `Hi team,
 
 Please help check the issue reported by user john.doe@example.com.
@@ -10,14 +13,15 @@ The macOS path is /Users/testuser/Desktop/report.txt.
 The Mantis ID is 943464.
 The firmware version is v7.2.11 build6634.
 
-Please update FG-123G, fg-3500g, FG-3501G and FG-300xG status for FLEX.
+Please update FG-123G, fg-3500g, FG-3501G, FG-300xG, FG-350ABG and FG-350XYG status for FLEX.
 Also verify model fg-3000g and customer ACME.
 
 Thanks.`;
 
 const presetPatternRules = [
   { pattern: 'FG-350xG', replacement: 'MODEL-350X' },
-  { pattern: 'FG-300xG', replacement: 'MODEL-300X' }
+  { pattern: 'FG-300xG', replacement: 'MODEL-300X' },
+  { pattern: 'FG-350*G', replacement: 'MODEL-350-FAMILY' }
 ];
 
 const maskRules = [
@@ -66,20 +70,34 @@ const elements = {
   clearBtn: document.getElementById('clearBtn'),
   sampleBtn: document.getElementById('sampleBtn'),
   addRuleBtn: document.getElementById('addRuleBtn'),
+  addPatternBtn: document.getElementById('addPatternBtn'),
+  exportRulesBtn: document.getElementById('exportRulesBtn'),
+  importRulesFile: document.getElementById('importRulesFile'),
   customRules: document.getElementById('customRules'),
   patternRules: document.getElementById('patternRules'),
   mappingTableBody: document.getElementById('mappingTableBody'),
-  statusMessage: document.getElementById('statusMessage')
+  mappingTypeFilter: document.getElementById('mappingTypeFilter'),
+  mappingSearch: document.getElementById('mappingSearch'),
+  statusMessage: document.getElementById('statusMessage'),
+  appVersion: document.getElementById('appVersion'),
+  effectiveTime: document.getElementById('effectiveTime')
 };
 
 let customRuleCount = 0;
 let patternRuleCount = 0;
+let latestMappingEntries = [];
 
 initialize();
 
 function initialize() {
+  renderMetaInfo();
   attachEvents();
   resetRuleEditors();
+}
+
+function renderMetaInfo() {
+  elements.appVersion.textContent = `Version: ${APP_VERSION}`;
+  elements.effectiveTime.textContent = `Effective: ${EFFECTIVE_TIME}`;
 }
 
 function attachEvents() {
@@ -88,7 +106,11 @@ function attachEvents() {
   elements.clearBtn.addEventListener('click', clearAll);
   elements.sampleBtn.addEventListener('click', loadSample);
   elements.addRuleBtn.addEventListener('click', () => addCustomRuleRow('', ''));
-  document.getElementById('addPatternBtn').addEventListener('click', () => addPatternRuleRow('', ''));
+  elements.addPatternBtn.addEventListener('click', () => addPatternRuleRow('', ''));
+  elements.exportRulesBtn.addEventListener('click', exportRules);
+  elements.importRulesFile.addEventListener('change', importRules);
+  elements.mappingTypeFilter.addEventListener('change', applyMappingFilters);
+  elements.mappingSearch.addEventListener('input', applyMappingFilters);
 }
 
 function handleMask() {
@@ -100,7 +122,8 @@ function handleMask() {
   maskedText = applyAutoRules(maskedText, workingState);
 
   elements.outputText.value = maskedText;
-  renderMappingTable(workingState.mappingEntries);
+  latestMappingEntries = workingState.mappingEntries.slice();
+  applyMappingFilters();
   setStatus('Masking completed locally in your browser.');
 }
 
@@ -135,7 +158,7 @@ function applyCustomRules(text, state) {
   let result = text;
 
   rules.forEach((rule) => {
-    const key = rule.source;
+    const key = rule.source.toLowerCase();
     if (!state.mappingByType.CUSTOM.has(key)) {
       state.mappingByType.CUSTOM.set(key, rule.label);
       state.mappingEntries.push({ type: 'CUSTOM', original: rule.source, masked: rule.label });
@@ -157,7 +180,7 @@ function applyPatternRules(text, state) {
     }
 
     result = result.replace(compiled.regex, (match) => {
-      const normalizedKey = `${rule.pattern}::${match.trim().toUpperCase()}`;
+      const normalizedKey = `${rule.pattern.toLowerCase()}::${match.trim().toUpperCase()}`;
       if (!state.mappingByType.CUSTOM.has(normalizedKey)) {
         state.mappingByType.CUSTOM.set(normalizedKey, rule.label);
         state.mappingEntries.push({ type: 'CUSTOM', original: match, masked: rule.label });
@@ -179,8 +202,11 @@ function applyAutoRules(text, state) {
     }
 
     result = result.replace(rule.pattern, (match) => {
-      const normalizedValue = rule.normalize ? rule.normalize(match) : match.trim();
-      return getOrCreateLabel(rule.type, normalizedValue, match, state);
+      const cleaned = stripTrailingPunctuation(match);
+      const trailing = match.slice(cleaned.length);
+      const normalizedValue = rule.normalize ? rule.normalize(cleaned) : cleaned.trim();
+      const label = getOrCreateLabel(rule.type, normalizedValue, cleaned, state);
+      return `${label}${trailing}`;
     });
   });
 
@@ -189,22 +215,24 @@ function applyAutoRules(text, state) {
 
 function replacePathsWithFileAwareness(text, rule, state) {
   return text.replace(rule.pattern, (match) => {
-    const cleanedMatch = match.trim();
+    const cleanedMatch = stripTrailingPunctuation(match.trim());
+    const trailing = match.trim().slice(cleanedMatch.length);
     const splitPath = splitPathAndTrailingFile(cleanedMatch);
 
     if (!splitPath.fileName) {
       const normalizedValue = rule.normalize ? rule.normalize(cleanedMatch) : cleanedMatch;
-      return getOrCreateLabel(rule.type, normalizedValue, cleanedMatch, state);
+      const label = getOrCreateLabel(rule.type, normalizedValue, cleanedMatch, state);
+      return `${label}${trailing}`;
     }
 
     const pathLabel = getOrCreateLabel(rule.type, splitPath.directory, splitPath.directory, state);
     const fileLabel = getOrCreateLabel('FILE', splitPath.fileName.toLowerCase(), splitPath.fileName, state);
-    return `${pathLabel}${splitPath.separator}${fileLabel}`;
+    return `${pathLabel}${splitPath.separator}${fileLabel}${trailing}`;
   });
 }
 
 function splitPathAndTrailingFile(pathValue) {
-  const separatorIndex = Math.max(pathValue.lastIndexOf('\\\\'), pathValue.lastIndexOf('/'));
+  const separatorIndex = Math.max(pathValue.lastIndexOf('\\'), pathValue.lastIndexOf('/'));
   if (separatorIndex === -1) {
     return { directory: pathValue, fileName: '', separator: '' };
   }
@@ -218,6 +246,10 @@ function splitPathAndTrailingFile(pathValue) {
   }
 
   return { directory, fileName, separator };
+}
+
+function stripTrailingPunctuation(value) {
+  return value.replace(/[.,;:!?]+$/g, '');
 }
 
 function getOrCreateLabel(type, key, originalValue, state) {
@@ -248,6 +280,19 @@ function toAlphabeticLabel(index) {
   return output;
 }
 
+function applyMappingFilters() {
+  const filterType = elements.mappingTypeFilter.value;
+  const keyword = elements.mappingSearch.value.trim().toLowerCase();
+
+  const filteredEntries = latestMappingEntries.filter((entry) => {
+    const typeMatch = filterType === 'ALL' || entry.type === filterType;
+    const keywordMatch = !keyword || `${entry.type} ${entry.original} ${entry.masked}`.toLowerCase().includes(keyword);
+    return typeMatch && keywordMatch;
+  });
+
+  renderMappingTable(filteredEntries);
+}
+
 function renderMappingTable(entries) {
   if (!entries.length) {
     elements.mappingTableBody.innerHTML = '<tr><td colspan="3" class="empty">No mapping generated yet.</td></tr>';
@@ -262,6 +307,9 @@ function renderMappingTable(entries) {
 function clearAll() {
   elements.inputText.value = '';
   elements.outputText.value = '';
+  elements.mappingTypeFilter.value = 'ALL';
+  elements.mappingSearch.value = '';
+  latestMappingEntries = [];
   elements.mappingTableBody.innerHTML = '<tr><td colspan="3" class="empty">No mapping generated yet.</td></tr>';
   elements.statusMessage.textContent = '';
   resetRuleEditors();
@@ -317,12 +365,12 @@ function addPatternRuleRow(pattern = '', label = '') {
   patternRuleCount += 1;
   const row = createRuleRow({
     rowId: `pattern-${patternRuleCount}`,
-    sourcePlaceholder: 'Pattern e.g. FG-350xG',
+    sourcePlaceholder: 'Pattern e.g. FG-350xG or FG-350*G',
     labelPlaceholder: 'Replacement label',
     sourceValue: pattern,
     labelValue: label,
     ignoreCase: true,
-    helperText: 'x matches one alphanumeric character. Example: FG-350xG matches FG-3500G / FG-3501G.'
+    helperText: 'x = one alphanumeric character, * = multiple alphanumeric characters. Example: FG-350xG or FG-350*G.'
   });
   elements.patternRules.appendChild(row);
 }
@@ -396,10 +444,71 @@ function buildPatternRegex(patternText) {
     return null;
   }
 
-  const escaped = escapeRegExp(trimmed).replace(/x/gi, '[A-Za-z0-9]');
+  let escaped = '';
+  for (const char of trimmed) {
+    if (char === '*') {
+      escaped += '[A-Za-z0-9]*';
+    } else if (char === 'x' || char === 'X') {
+      escaped += '[A-Za-z0-9]';
+    } else {
+      escaped += escapeRegExp(char);
+    }
+  }
+
   return {
     regex: new RegExp(`\\b${escaped}\\b`, 'gi')
   };
+}
+
+function exportRules() {
+  const exportData = {
+    version: APP_VERSION,
+    exportedAt: EFFECTIVE_TIME,
+    customRules: getCustomRules().map((rule) => ({ source: rule.source, label: rule.label })),
+    patternRules: getPatternRules().map((rule) => ({ pattern: rule.pattern, label: rule.label }))
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = 'mail-sensitive-info-masker-rules.json';
+  anchor.click();
+  URL.revokeObjectURL(objectUrl);
+  setStatus('Rule template exported locally.');
+}
+
+function importRules(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      applyImportedRules(parsed);
+      setStatus('Rule template imported locally.');
+    } catch (_error) {
+      setStatus('Invalid rule template file.');
+    }
+    elements.importRulesFile.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function applyImportedRules(data) {
+  elements.customRules.innerHTML = '';
+  elements.patternRules.innerHTML = '';
+  customRuleCount = 0;
+  patternRuleCount = 0;
+
+  const customRules = Array.isArray(data.customRules) ? data.customRules : [];
+  const patternRules = Array.isArray(data.patternRules) ? data.patternRules : [];
+
+  customRules.forEach((rule) => addCustomRuleRow(rule.source || '', rule.label || ''));
+  patternRules.forEach((rule) => addPatternRuleRow(rule.pattern || '', rule.label || ''));
 }
 
 function replaceLiteral(text, source, replacement, ignoreCase) {

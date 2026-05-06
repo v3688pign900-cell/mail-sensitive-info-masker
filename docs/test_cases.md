@@ -12,35 +12,30 @@
    - Expect replacement in output and mapping table
 5. Add pattern rule `FG-350xG -> MODEL-350X`
    - Expect both `FG-3500G` and `FG-3501G` to become `MODEL-350X`
-6. Add pattern rule `FG-300xG -> MODEL-300X`
-   - Expect both `FG-3000G` and `FG-3001G` to become `MODEL-300X`
+6. Add pattern rule `FG-350*G -> MODEL-350-FAMILY`
+   - Expect `FG-350ABG` and `FG-350XYG` to become `MODEL-350-FAMILY`
 7. Lowercase model text such as `fg-3000g`
    - Expect case-insensitive pattern rule replacement
-8. Click `Copy Result`
+8. Export current rules
+   - Expect local JSON download only
+9. Import exported rules
+   - Expect rule editors restored locally
+10. Apply mapping type filter `EMAIL`
+   - Expect table to show only email mappings
+11. Search mapping keyword `MODEL`
+   - Expect matching mapping rows only
+12. Click `Copy Result`
    - Expect clipboard copy or graceful warning if browser blocks clipboard
-9. Click `Clear`
+13. Click `Clear`
    - Expect input, output, custom rules, pattern rules, and mapping table removed
-10. Click `Load Sample`
+14. Click `Load Sample`
    - Expect fake sample email and example rules loaded
+15. Check version and effective time
+   - Expect both visible on page
 
 ## Constraint Checks
 
-Run string scans excluding `.git/` and confirm no matches inside shipped app files for:
-
-- `fetch`
-- `XMLHttpRequest`
-- `WebSocket`
-- `localStorage`
-- `sessionStorage`
-- `document.cookie`
-- `indexedDB`
-- `navigator.sendBeacon`
-- `google-analytics`
-- `gtag`
-- `clarity`
-- `cdn`
-- `http://`
-- `https://`
+Run string scans excluding `.git/` and confirm no matches inside shipped app files for disallowed tokens.
 
 ## Manual Browser Checks
 

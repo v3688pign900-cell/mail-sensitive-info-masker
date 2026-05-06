@@ -12,9 +12,12 @@ The project uses a static front-end structure:
 
 - `generateLabel(type, index)` creates labels like `EMAIL-A` and `EMAIL-AA`
 - `applyCustomRules()` applies manual exact replacements first
-- `applyPatternRules()` applies model wildcard rules such as `FG-350xG`
+- `applyPatternRules()` applies wildcard model rules such as `FG-350xG` and `FG-350*G`
 - `applyAutoRules()` runs regex-based automatic masking rules
+- `replacePathsWithFileAwareness()` handles path/file masking with punctuation awareness
 - `renderMappingTable()` shows the current mapping on screen
+- `applyMappingFilters()` filters current mapping table by type and keyword
+- `exportRules()` and `importRules()` handle local rule template files only
 - `clearAll()` removes input, output, rule editors, and mapping table state
 
 ## Regex Rule Location
@@ -37,22 +40,25 @@ Edit `generateLabel()` and `toAlphabeticLabel()` in `app.js`.
 
 1. Collect exact custom rules from the UI
 2. Apply exact custom rules first
-3. Collect wildcard model pattern rules from the UI
-4. Apply wildcard model pattern rules second
+3. Collect wildcard pattern rules from the UI
+4. Apply wildcard pattern rules second
 5. Apply automatic regex rules after custom logic
-6. Render mapping table on screen
+6. Filter mapping table for user review if requested
+7. Render mapping table on screen
 
 ## Pattern Rule Design
 
-v1.1 adds wildcard model rules for many naming variations.
+v1.2 adds stronger wildcard model rules for many naming variations.
 
 - Pattern example: `FG-350xG`
+- Pattern example: `FG-350*G`
 - `x` means one alphanumeric wildcard character
+- `*` means multiple alphanumeric wildcard characters
 - Matching is case-insensitive
-- This is suitable for model families like `FG-3500G`, `FG-3501G`, `fg-3500g`
 
 ## Notes
 
 - Identical normalized values of the same type reuse the same label in one masking run
 - Mapping is regenerated fresh for each masking run
-- No persistent storage is used
+- Rule template files are user-triggered local JSON only
+- No persistent browser storage is used

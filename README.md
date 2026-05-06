@@ -14,11 +14,20 @@ Mail Sensitive Info Masker is a browser-only web tool for masking sensitive valu
 1. Open `index.html` in a browser, or open the GitHub Pages page.
 2. Paste email content into the original text area.
 3. Optionally add exact custom replacement rules.
-4. Optionally add model pattern rules such as `FG-350xG`.
+4. Optionally add pattern rules such as `FG-350xG` or `FG-350*G`.
 5. Click `Mask / 遮罩轉換`.
 6. Review the masked result and mapping table.
-7. Click `Copy Result / 複製結果` if needed.
-8. Click `Clear / 清除` to remove input, output, custom rules, pattern rules, and mapping data.
+7. Use type filter or search box to review mappings.
+8. Click `Copy Result / 複製結果` if needed.
+9. Click `Clear / 清除` to remove input, output, custom rules, pattern rules, and mapping data.
+
+## v1.2 Highlights
+
+- Pattern wildcard supports `x` and `*`
+- Local-only rule template export/import
+- Mapping table filter and search
+- Version and effective time shown on page
+- Improved path/file punctuation handling
 
 ## GitHub Pages Usage
 
@@ -42,8 +51,9 @@ All masking is performed locally in your browser. No email content, sensitive in
 - No email content is uploaded
 - No sensitive data is stored
 - No persistent browser storage is used
-- Custom rules exist only in current page memory
-- Pattern rules exist only in current page memory
+- Rule template import/export is local file handling only
+- Custom rules exist only in current page memory unless user manually exports a rule template
+- Pattern rules exist only in current page memory unless user manually exports a rule template
 - Mapping data exists only in current page memory until cleared or page close
 
 ## Automatic Masking Rules
@@ -72,26 +82,28 @@ Examples:
 
 Exact rules are case-insensitive and run before automatic masking.
 
-## Model Pattern Rules
+## Pattern Rules
 
 For many model variants, use one pattern rule.
 
 Examples:
 
 - `FG-350xG` can match `FG-3500G` and `FG-3501G`
+- `FG-350*G` can match `FG-350ABG` and `FG-350XYG`
 - `FG-300xG` can match `FG-3000G` and `FG-3001G`
 
-Rule design in v1.1:
+Rule design in v1.2:
 
 - `x` means one alphanumeric wildcard character
+- `*` means multiple alphanumeric wildcard characters
 - Matching is case-insensitive
 - Pattern rules run after exact custom rules and before automatic rules
 
-This is the recommended way to manage many model writing styles.
+## Rule Template Import / Export
 
-## Test Sample
-
-Use `Load Sample / 載入範例` to load a fake sample email with fake data only.
+- Export saves current exact and pattern rules to a local JSON file
+- Import loads rules from a local JSON file into the current page
+- No rule template is uploaded anywhere
 
 ## Supported Browsers
 

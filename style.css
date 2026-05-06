@@ -2,6 +2,7 @@
   color-scheme: light;
   --bg: #eef4ff;
   --panel: #ffffff;
+  --subpanel: #f8fbff;
   --line: #d7dfeb;
   --text: #1d2735;
   --muted: #5c6778;
@@ -32,7 +33,7 @@ body {
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
 }
 
@@ -49,6 +50,14 @@ body {
   color: var(--muted);
 }
 
+.meta-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.meta-chip,
 .badge {
   background: #dbeafe;
   color: #1e40af;
@@ -67,10 +76,21 @@ body {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
+.sub-panel {
+  background: var(--subpanel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+
 .panel-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.narrow-gap {
+  gap: 12px;
 }
 
 .full-width {
@@ -84,7 +104,8 @@ label {
 }
 
 textarea,
-input {
+input,
+select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -101,13 +122,15 @@ textarea {
 }
 
 textarea:focus,
-input:focus {
+input:focus,
+select:focus {
   outline: 2px solid #bfdbfe;
   border-color: #93c5fd;
 }
 
 .actions,
-.panel-header {
+.panel-header,
+.table-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -120,7 +143,12 @@ input:focus {
   justify-content: flex-start;
 }
 
-button {
+.compact-actions {
+  justify-content: flex-end;
+}
+
+button,
+.file-button {
   border: none;
   border-radius: 12px;
   padding: 10px 14px;
@@ -130,9 +158,11 @@ button {
   background: var(--primary);
   color: #fff;
   transition: background 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
 }
 
-button:hover {
+button:hover,
+.file-button:hover {
   background: var(--primary-dark);
   transform: translateY(-1px);
 }
@@ -199,11 +229,14 @@ th {
     display: grid;
   }
 
-  button {
+  button,
+  .file-button {
     width: 100%;
+    text-align: center;
   }
 
-  .badge {
+  .badge,
+  .meta-chip {
     white-space: normal;
   }
 }
