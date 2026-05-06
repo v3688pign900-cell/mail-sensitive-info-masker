@@ -1,5 +1,5 @@
-const APP_VERSION = 'v1.3.1';
-const EFFECTIVE_TIME = '2026-05-06 11:41 Asia/Taipei';
+const APP_VERSION = 'v1.4';
+const EFFECTIVE_TIME = '2026-05-06 13:19 Asia/Taipei';
 
 const FALLBACK_CUSTOM_RULES = [
   { source: 'FG-123G', label: 'MODEL-A' },
@@ -84,8 +84,10 @@ const elements = {
   importRulesFile: document.getElementById('importRulesFile'),
   toggleCustomRulesBtn: document.getElementById('toggleCustomRulesBtn'),
   togglePatternRulesBtn: document.getElementById('togglePatternRulesBtn'),
+  toggleMetaBtn: document.getElementById('toggleMetaBtn'),
   customRulesPanel: document.getElementById('customRulesPanel'),
   patternRulesPanel: document.getElementById('patternRulesPanel'),
+  footerMeta: document.getElementById('footerMeta'),
   customRules: document.getElementById('customRules'),
   patternRules: document.getElementById('patternRules'),
   mappingTableBody: document.getElementById('mappingTableBody'),
@@ -124,8 +126,11 @@ function attachEvents() {
   elements.importRulesFile.addEventListener('change', importRules);
   elements.mappingTypeFilter.addEventListener('change', applyMappingFilters);
   elements.mappingSearch.addEventListener('input', applyMappingFilters);
-  elements.toggleCustomRulesBtn.addEventListener('click', () => togglePanel(elements.customRulesPanel, elements.toggleCustomRulesBtn, 'Custom Rules / 自訂規則'));
-  elements.togglePatternRulesBtn.addEventListener('click', () => togglePanel(elements.patternRulesPanel, elements.togglePatternRulesBtn, 'Pattern Rules / 型號規則'));
+  elements.toggleCustomRulesBtn.addEventListener('click', () => togglePanel(elements.customRulesPanel, elements.toggleCustomRulesBtn, 'Custom Rules'));
+  elements.togglePatternRulesBtn.addEventListener('click', () => togglePanel(elements.patternRulesPanel, elements.togglePatternRulesBtn, 'Pattern Rules'));
+  if (elements.toggleMetaBtn) {
+    elements.toggleMetaBtn.addEventListener('click', toggleFooterMeta);
+  }
 }
 
 function loadDefaultRules() {
@@ -146,7 +151,13 @@ function loadDefaultRules() {
 function togglePanel(panel, button, labelBase) {
   const isCollapsed = panel.classList.contains('collapsed');
   panel.classList.toggle('collapsed', !isCollapsed);
-  button.textContent = isCollapsed ? `Hide ${labelBase}` : `Show ${labelBase}`;
+  button.textContent = isCollapsed ? `Hide ${labelBase}` : `${labelBase}`;
+}
+
+function toggleFooterMeta() {
+  const isOpen = elements.footerMeta.classList.contains('open');
+  elements.footerMeta.classList.toggle('open', !isOpen);
+  elements.toggleMetaBtn.textContent = isOpen ? 'Info' : 'Hide Info';
 }
 
 function handleMask() {

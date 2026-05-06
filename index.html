@@ -15,7 +15,7 @@
       </div>
     </header>
 
-    <section class="panel panel-grid">
+    <section class="panel panel-grid main-panel">
       <div>
         <label for="inputText">Original Email Content</label>
         <textarea id="inputText" rows="14" placeholder="Paste email content here..."></textarea>
@@ -24,66 +24,69 @@
         <label for="outputText">Masked Result</label>
         <textarea id="outputText" rows="14" readonly placeholder="Masked result will appear here..."></textarea>
       </div>
-      <div class="actions full-width">
-        <button id="maskBtn" type="button">Mask / 遮罩轉換</button>
-        <button id="copyBtn" type="button">Copy Result / 複製結果</button>
-        <button id="clearBtn" type="button">Clear / 清除</button>
-        <button id="sampleBtn" type="button">Load Sample / 載入範例</button>
+      <div class="actions full-width simple-actions">
+        <button id="maskBtn" type="button">Mask</button>
+        <button id="copyBtn" type="button">Copy</button>
+        <button id="clearBtn" type="button">Clear</button>
+        <button id="sampleBtn" type="button">Sample</button>
       </div>
       <p id="statusMessage" class="status full-width" aria-live="polite"></p>
     </section>
 
-    <section class="panel">
-      <div class="panel-header">
+    <section class="panel simple-panel">
+      <div class="panel-header compact-header">
         <div>
-          <h2>Rule Panels</h2>
-          <p class="hint">Default rules live in repo files. Use the toggle buttons to view or edit them in the browser.</p>
+          <h2>Rules</h2>
+          <p class="hint">Open only when you need to review or edit rules.</p>
         </div>
         <div class="actions compact-actions">
-          <button id="exportRulesBtn" type="button">Export Rules / 匯出規則</button>
-          <label class="file-button" for="importRulesFile">Import Rules / 匯入規則</label>
+          <button id="exportRulesBtn" type="button">Export</button>
+          <label class="file-button" for="importRulesFile">Import</label>
           <input id="importRulesFile" type="file" accept="application/json,.json,text/plain" hidden>
         </div>
       </div>
 
-      <div class="toggle-bar">
-        <button id="toggleCustomRulesBtn" type="button">Show Custom Rules / 顯示自訂規則</button>
-        <a class="link-chip" href="./rules/custom-rules.json" target="_blank" rel="noopener">GitHub-editable Custom Rules JSON</a>
+      <div class="toggle-bar compact-toggle-bar">
+        <button id="toggleCustomRulesBtn" type="button">Custom Rules</button>
+        <button id="togglePatternRulesBtn" type="button">Pattern Rules</button>
       </div>
+
       <section id="customRulesPanel" class="sub-panel collapsed">
-        <div class="panel-header no-top-margin">
+        <div class="panel-header no-top-margin compact-header">
           <div>
             <h2>Custom Rules</h2>
-            <p class="hint">Exact string replacement. Runs before automatic masking. Case-insensitive.</p>
+            <p class="hint">Exact string replacement.</p>
           </div>
-          <button id="addRuleBtn" type="button">Add Custom Rule / 新增自訂替換</button>
+          <div class="actions compact-actions">
+            <button id="addRuleBtn" type="button">Add</button>
+            <a class="link-chip desktop-only-inline" href="./rules/custom-rules.json" target="_blank" rel="noopener">custom-rules.json</a>
+          </div>
         </div>
         <div id="customRules" class="custom-rules"></div>
       </section>
 
-      <div class="toggle-bar">
-        <button id="togglePatternRulesBtn" type="button">Show Pattern Rules / 顯示型號規則</button>
-        <a class="link-chip" href="./rules/pattern-rules.json" target="_blank" rel="noopener">GitHub-editable Pattern Rules JSON</a>
-      </div>
       <section id="patternRulesPanel" class="sub-panel collapsed">
-        <div class="panel-header no-top-margin">
+        <div class="panel-header no-top-margin compact-header">
           <div>
             <h2>Pattern Rules</h2>
-            <p class="hint">Support `x` for one alphanumeric character and `*` for multiple alphanumeric characters.</p>
+            <p class="hint">Use `x` or `*` wildcard.</p>
           </div>
-          <button id="addPatternBtn" type="button">Add Pattern Rule / 新增型號規則</button>
+          <div class="actions compact-actions">
+            <button id="addPatternBtn" type="button">Add</button>
+            <a class="link-chip desktop-only-inline" href="./rules/pattern-rules.json" target="_blank" rel="noopener">pattern-rules.json</a>
+          </div>
         </div>
         <div id="patternRules" class="custom-rules"></div>
       </section>
     </section>
 
-    <section class="panel">
-      <div class="panel-header">
+    <section class="panel simple-panel">
+      <div class="panel-header compact-header">
         <div>
-          <h2>Mapping Table</h2>
-          <p class="hint">Filter by type or search original / masked values.</p>
+          <h2>Mapping</h2>
+          <p class="hint">Filter or search the result mapping.</p>
         </div>
-        <div class="table-tools">
+        <div class="table-tools compact-tools">
           <select id="mappingTypeFilter">
             <option value="ALL">All Types</option>
             <option value="CUSTOM">CUSTOM</option>
@@ -95,7 +98,7 @@
             <option value="ISSUE">ISSUE</option>
             <option value="VERSION">VERSION</option>
           </select>
-          <input id="mappingSearch" type="text" placeholder="Search mapping table...">
+          <input id="mappingSearch" type="text" placeholder="Search mapping...">
         </div>
       </div>
       <div class="table-wrap">
@@ -116,11 +119,16 @@
       </div>
     </section>
 
-    <footer class="app-footer panel">
-      <div class="meta-strip footer-meta">
-        <span class="badge">Local-only / Offline-ready</span>
-        <span id="appVersion" class="meta-chip">Version: -</span>
-        <span id="effectiveTime" class="meta-chip">Effective: -</span>
+    <footer class="app-footer panel simple-panel">
+      <div class="footer-bar">
+        <button id="toggleMetaBtn" type="button" class="meta-toggle mobile-only-inline">Info</button>
+        <div id="footerMeta" class="meta-strip footer-meta collapsed-mobile">
+          <span class="badge">Local-only / Offline-ready</span>
+          <span id="appVersion" class="meta-chip">Version: -</span>
+          <span id="effectiveTime" class="meta-chip">Effective: -</span>
+          <a class="link-chip desktop-only-inline" href="./rules/custom-rules.json" target="_blank" rel="noopener">custom-rules.json</a>
+          <a class="link-chip desktop-only-inline" href="./rules/pattern-rules.json" target="_blank" rel="noopener">pattern-rules.json</a>
+        </div>
       </div>
     </footer>
   </main>
