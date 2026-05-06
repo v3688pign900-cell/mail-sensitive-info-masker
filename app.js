@@ -1,5 +1,5 @@
-const APP_VERSION = 'v1.5';
-const EFFECTIVE_TIME = '2026-05-06 13:22 Asia/Taipei';
+const APP_VERSION = 'v1.6';
+const EFFECTIVE_TIME = '2026-05-06 13:44 Asia/Taipei';
 
 const FALLBACK_CUSTOM_RULES = [
   { source: 'FG-123G', label: 'MODEL-A' },
