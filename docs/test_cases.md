@@ -16,22 +16,32 @@
    - Expect `FG-350ABG` and `FG-350XYG` to become `MODEL-350-FAMILY`
 7. Lowercase model text such as `fg-3000g`
    - Expect case-insensitive pattern rule replacement
-8. Export current rules
+8. Windows path with spaces and quotes
+   - Expect path and file parts masked correctly
+9. Linux path ending with semicolon
+   - Expect punctuation preserved outside mask label
+10. Archive filename like `report.tar.gz`
+   - Expect file masking support
+11. Version strings like `v7.2.11 build6634`, `R1.2.3`, `7.2`, `build 6634`
+   - Expect version masking support
+12. Export current rules
    - Expect local JSON download only
-9. Import exported rules
+13. Import exported rules
    - Expect rule editors restored locally
-10. Apply mapping type filter `EMAIL`
+14. Apply mapping type filter `EMAIL`
    - Expect table to show only email mappings
-11. Search mapping keyword `MODEL`
+15. Search mapping keyword `MODEL`
    - Expect matching mapping rows only
-12. Click `Copy Result`
+16. Click `Copy Result`
    - Expect clipboard copy or graceful warning if browser blocks clipboard
-13. Click `Clear`
+17. Click `Clear`
    - Expect input, output, custom rules, pattern rules, and mapping table removed
-14. Click `Load Sample`
+18. Click `Load Sample`
    - Expect fake sample email and example rules loaded
-15. Check version and effective time
-   - Expect both visible on page
+19. Check page header
+   - Expect product name without version text in main title
+20. Check version and effective time chips
+   - Expect both visible below title
 
 ## Constraint Checks
 

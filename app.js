@@ -1,7 +1,16 @@
-const APP_VERSION = 'v1.3';
-const EFFECTIVE_TIME = '2026-05-06 11:30 Asia/Taipei';
-const DEFAULT_CUSTOM_RULES_PATH = './rules/custom-rules.json';
-const DEFAULT_PATTERN_RULES_PATH = './rules/pattern-rules.json';
+const APP_VERSION = 'v1.3.1';
+const EFFECTIVE_TIME = '2026-05-06 11:41 Asia/Taipei';
+
+const FALLBACK_CUSTOM_RULES = [
+  { source: 'FG-123G', label: 'MODEL-A' },
+  { source: 'FLEX', label: 'FACTORY-A' }
+];
+
+const FALLBACK_PATTERN_RULES = [
+  { pattern: 'FG-350xG', label: 'MODEL-350X' },
+  { pattern: 'FG-300xG', label: 'MODEL-300X' },
+  { pattern: 'FG-350*G', label: 'MODEL-350-FAMILY' }
+];
 
 const sampleEmail = `Hi team,
 
@@ -13,12 +22,14 @@ The Windows path is "C:\\Users\\Test User\\Documents\\error_report_2026.txt".
 The Linux path is /var/log/system/error.log;
 The macOS path is /Users/testuser/Desktop/report.txt.
 The archive path is /opt/backups/report.tar.gz.
+The release path is D:\\Build Output\\release notes\\firmware_v7.2.11.zip.
 The Mantis ID is 943464.
 The firmware version is v7.2.11 build6634.
 The fallback version is R1.2.3 and patch version 7.2.
+The hotfix is build 6634.
 
-Please update FG-123G, fg-3500g, FG-3501G, FG-300xG, FG-350ABG and FG-350XYG status for FLEX.
-Also verify model fg-3000g and customer ACME.
+Please update FG-123G, fg-3500g, FG-3501G, FG-300xG, FG-350ABG, FG-350XYG and FG-3509G status for FLEX.
+Also verify model fg-3000g, FG-350TESTG and customer ACME.
 
 Thanks.`;
 
@@ -40,12 +51,12 @@ const maskRules = [
   },
   {
     type: 'PATH',
-    pattern: /(?:"[A-Za-z]:\\(?:[^\\\r\n"]+\\)*[^\\\r\n"]+"|[A-Za-z]:\\(?:[^\\\r\n]+\\)*[^\\\r\n\s]+|\/(?:[^\s/:]+\/)+[^\s]+|\/Users\/(?:[^\/\s]+\/)+[^\s]+)/g,
+    pattern: /(?:(?:"[A-Za-z]:\\(?:[^\\\r\n"]+\\)*[^\\\r\n"]+")|(?:[A-Za-z]:\\(?:[^\\\r\n]+\\)*[^\\\r\n\s]+)|(?:\/(?:[^\s/:]+\/)+[^\s]+)|(?:\/Users\/(?:[^\/\s]+\/)+[^\s]+))/g,
     normalize: (value) => value.trim().replace(/^"|"$/g, '')
   },
   {
     type: 'FILE',
-    pattern: /\b[A-Za-z0-9._-]+\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?|tar\.gz)\b/gi,
+    pattern: /\b[A-Za-z0-9._ -]+\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?|tar\.gz)\b/gi,
     normalize: (value) => value.trim().toLowerCase()
   },
   {
@@ -91,10 +102,10 @@ let latestMappingEntries = [];
 
 initialize();
 
-async function initialize() {
+function initialize() {
   renderMetaInfo();
   attachEvents();
-  await loadDefaultRules();
+  loadDefaultRules();
 }
 
 function renderMetaInfo() {
@@ -117,39 +128,19 @@ function attachEvents() {
   elements.togglePatternRulesBtn.addEventListener('click', () => togglePanel(elements.patternRulesPanel, elements.togglePatternRulesBtn, 'Pattern Rules / 型號規則'));
 }
 
-async function loadDefaultRules() {
+function loadDefaultRules() {
   resetRuleEditors();
 
-  const customDefaults = await loadJsonFile(DEFAULT_CUSTOM_RULES_PATH, []);
-  const patternDefaults = await loadJsonFile(DEFAULT_PATTERN_RULES_PATH, []);
+  const defaultCustomRules = Array.isArray(window.DEFAULT_CUSTOM_RULES) && window.DEFAULT_CUSTOM_RULES.length
+    ? window.DEFAULT_CUSTOM_RULES
+    : FALLBACK_CUSTOM_RULES;
 
-  customDefaults.forEach((rule) => addCustomRuleRow(rule.source || '', rule.label || ''));
-  patternDefaults.forEach((rule) => addPatternRuleRow(rule.pattern || '', rule.label || ''));
-}
+  const defaultPatternRules = Array.isArray(window.DEFAULT_PATTERN_RULES) && window.DEFAULT_PATTERN_RULES.length
+    ? window.DEFAULT_PATTERN_RULES
+    : FALLBACK_PATTERN_RULES;
 
-async function loadJsonFile(path, fallbackValue) {
-  try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      return fallbackValue;
-    }
-    return await response.json();
-  } catch (_error) {
-    if (path === DEFAULT_CUSTOM_RULES_PATH) {
-      return [
-        { source: 'FG-123G', label: 'MODEL-A' },
-        { source: 'FLEX', label: 'FACTORY-A' }
-      ];
-    }
-    if (path === DEFAULT_PATTERN_RULES_PATH) {
-      return [
-        { pattern: 'FG-350xG', label: 'MODEL-350X' },
-        { pattern: 'FG-300xG', label: 'MODEL-300X' },
-        { pattern: 'FG-350*G', label: 'MODEL-350-FAMILY' }
-      ];
-    }
-    return fallbackValue;
-  }
+  defaultCustomRules.forEach((rule) => addCustomRuleRow(rule.source || '', rule.label || ''));
+  defaultPatternRules.forEach((rule) => addPatternRuleRow(rule.pattern || '', rule.label || ''));
 }
 
 function togglePanel(panel, button, labelBase) {
@@ -351,7 +342,7 @@ function renderMappingTable(entries) {
     .join('');
 }
 
-async function clearAll() {
+function clearAll() {
   elements.inputText.value = '';
   elements.outputText.value = '';
   elements.mappingTypeFilter.value = 'ALL';
@@ -359,7 +350,7 @@ async function clearAll() {
   latestMappingEntries = [];
   elements.mappingTableBody.innerHTML = '<tr><td colspan="3" class="empty">No mapping generated yet.</td></tr>';
   elements.statusMessage.textContent = '';
-  await loadDefaultRules();
+  loadDefaultRules();
 }
 
 function loadSample() {
