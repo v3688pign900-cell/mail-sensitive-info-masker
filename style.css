@@ -249,4 +249,9 @@ th {
   .meta-chip {
     white-space: normal;
   }
+
+  .footer-meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
