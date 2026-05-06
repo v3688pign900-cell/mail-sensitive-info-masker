@@ -4,7 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mail Sensitive Info Masker</title>
-  <link rel="stylesheet" href="style.css">
+  <script src="version.js"></script>
+  <script>
+    (function () {
+      var version = window.APP_VERSION || 'v1.8.2';
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'style.css?v=' + encodeURIComponent(version);
+      document.head.appendChild(link);
+    })();
+  </script>
 </head>
 <body>
   <main class="app-shell">
@@ -150,10 +159,9 @@
     </footer>
   </main>
 
-  <script src="version.js"></script>
   <script>
     (function () {
-      var version = window.APP_VERSION || 'v1.8.1';
+      var version = window.APP_VERSION || 'v1.8.2';
       var scripts = ['rules/default-rules.js', 'app.js'];
       scripts.forEach(function (src) {
         var script = document.createElement('script');
