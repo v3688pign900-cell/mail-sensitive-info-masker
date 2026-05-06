@@ -1,5 +1,5 @@
-const APP_VERSION = 'v1.8';
-const EFFECTIVE_TIME = '2026-05-06 14:28 Asia/Taipei';
+const APP_VERSION = window.APP_VERSION || 'v1.8.1';
+const EFFECTIVE_TIME = window.EFFECTIVE_TIME || '2026-05-06 14:35 Asia/Taipei';
 
 const FALLBACK_CUSTOM_RULES = [
   { source: 'FG-123G', label: 'MODEL-A' },
