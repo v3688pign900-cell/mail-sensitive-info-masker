@@ -9,10 +9,11 @@ Mail Sensitive Info Masker is a browser-only web tool for masking sensitive valu
 - Review the masked result and mapping table on screen
 - Copy the masked result safely for external use
 
-## v1.6 Highlights
+## v1.7 Highlights
 
 - Built-in FortiGate masking starter rules
 - Supports both full product names and short model names
+- Adds SN masking for 16-character values starting with `F` or `f`
 - Keeps previous wildcard model rule support
 - Includes FortiGate model reference file in repo
 

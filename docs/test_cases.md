@@ -18,13 +18,17 @@
    - Expect path and file parts masked correctly
 8. Archive filename like `report.tar.gz`
    - Expect file masking support
-9. Version strings like `v7.2.11 build6634`, `R1.2.3`, `7.2`, `build 6634`
+9. Fortinet-style serial such as `FG7H1GTB25000123`
+   - Expect SN masking because it starts with `F` or `f`, is 16 characters, and contains letters plus digits
+10. Repeated serial values such as `FG7H1GTB25001333` appearing twice
+   - Expect the same `SN-*` label reused
+11. Version strings like `v7.2.11 build6634`, `R1.2.3`, `7.2`, `build 6634`
    - Expect version masking support
-10. Export current rules
+12. Export current rules
    - Expect local JSON download only
-11. Import exported rules
+13. Import exported rules
    - Expect rule editors restored locally
-12. Mapping filter and search
+14. Mapping filter and search
    - Expect correct filtered results
 
 ## Constraint Checks

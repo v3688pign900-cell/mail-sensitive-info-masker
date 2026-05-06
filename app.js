@@ -1,5 +1,5 @@
-const APP_VERSION = 'v1.6';
-const EFFECTIVE_TIME = '2026-05-06 13:44 Asia/Taipei';
+const APP_VERSION = 'v1.7';
+const EFFECTIVE_TIME = '2026-05-06 14:24 Asia/Taipei';
 
 const FALLBACK_CUSTOM_RULES = [
   { source: 'FG-123G', label: 'MODEL-A' },
@@ -46,7 +46,7 @@ const maskRules = [
   },
   {
     type: 'SN',
-    pattern: /\bSN[A-Z0-9-]{6,}\b/gi,
+    pattern: /\b(?:SN[A-Z0-9-]{6,}|[Ff](?=[A-Za-z0-9]{15}\b)(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]{15})\b/g,
     normalize: (value) => value.trim().toUpperCase()
   },
   {
