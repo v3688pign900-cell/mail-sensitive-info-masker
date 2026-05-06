@@ -150,7 +150,16 @@
     </footer>
   </main>
 
-  <script src="rules/default-rules.js"></script>
-  <script src="app.js"></script>
+  <script>
+    (function () {
+      var version = 'v1.8-20260506-1428';
+      var scripts = ['rules/default-rules.js', 'app.js'];
+      scripts.forEach(function (src) {
+        var script = document.createElement('script');
+        script.src = src + '?v=' + encodeURIComponent(version);
+        document.body.appendChild(script);
+      });
+    })();
+  </script>
 </body>
 </html>
