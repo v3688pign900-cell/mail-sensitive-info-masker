@@ -2,7 +2,7 @@
 
 ## Program Architecture
 
-The project uses a simple static front-end structure:
+The project uses a static front-end structure:
 
 - `index.html` provides the UI
 - `style.css` provides responsive layout and styling
@@ -11,10 +11,11 @@ The project uses a simple static front-end structure:
 ## Main Functions
 
 - `generateLabel(type, index)` creates labels like `EMAIL-A` and `EMAIL-AA`
-- `applyCustomRules()` applies manual user replacements before automatic masking
+- `applyCustomRules()` applies manual exact replacements first
+- `applyPatternRules()` applies model wildcard rules such as `FG-350xG`
 - `applyAutoRules()` runs regex-based automatic masking rules
 - `renderMappingTable()` shows the current mapping on screen
-- `clearAll()` removes input, output, custom rules, and mapping table state
+- `clearAll()` removes input, output, rule editors, and mapping table state
 
 ## Regex Rule Location
 
@@ -25,7 +26,8 @@ Regex rules are centralized in the `maskRules` array in `app.js` so PM can adjus
 1. Add a new rule object to `maskRules`
 2. Define `type`
 3. Define `pattern`
-4. Add a matching counter entry in `createWorkingState()` if needed
+4. Add `normalize` logic if values should be case-normalized or spacing-normalized
+5. Add a matching counter entry in `createWorkingState()` if needed
 
 ## How to Adjust Label Format
 
@@ -33,13 +35,24 @@ Edit `generateLabel()` and `toAlphabeticLabel()` in `app.js`.
 
 ## Execution Order
 
-1. Collect custom rules from the UI
-2. Apply manual custom rules first
-3. Apply automatic regex rules after custom rules
-4. Render mapping table on screen
+1. Collect exact custom rules from the UI
+2. Apply exact custom rules first
+3. Collect wildcard model pattern rules from the UI
+4. Apply wildcard model pattern rules second
+5. Apply automatic regex rules after custom logic
+6. Render mapping table on screen
+
+## Pattern Rule Design
+
+v1.1 adds wildcard model rules for many naming variations.
+
+- Pattern example: `FG-350xG`
+- `x` means one alphanumeric wildcard character
+- Matching is case-insensitive
+- This is suitable for model families like `FG-3500G`, `FG-3501G`, `fg-3500g`
 
 ## Notes
 
-- Identical values of the same type reuse the same label in one masking run
+- Identical normalized values of the same type reuse the same label in one masking run
 - Mapping is regenerated fresh for each masking run
 - No persistent storage is used

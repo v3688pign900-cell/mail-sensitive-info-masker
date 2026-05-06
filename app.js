@@ -10,9 +10,53 @@ The macOS path is /Users/testuser/Desktop/report.txt.
 The Mantis ID is 943464.
 The firmware version is v7.2.11 build6634.
 
-Please update FG-123G status for FLEX.
+Please update FG-123G, fg-3500g, FG-3501G and FG-300xG status for FLEX.
+Also verify model fg-3000g and customer ACME.
 
 Thanks.`;
+
+const presetPatternRules = [
+  { pattern: 'FG-350xG', replacement: 'MODEL-350X' },
+  { pattern: 'FG-300xG', replacement: 'MODEL-300X' }
+];
+
+const maskRules = [
+  {
+    type: 'EMAIL',
+    pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
+    normalize: (value) => value.trim().toLowerCase()
+  },
+  {
+    type: 'IP',
+    pattern: /\b(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}\b/g,
+    normalize: (value) => value.trim()
+  },
+  {
+    type: 'SN',
+    pattern: /\bSN[A-Z0-9-]{6,}\b/gi,
+    normalize: (value) => value.trim().toUpperCase()
+  },
+  {
+    type: 'PATH',
+    pattern: /(?:[A-Za-z]:\\(?:[^\\\r\n]+\\)*[^\\\r\n\s]+|\/(?:[^\s/:]+\/)+[^\s]+|\/Users\/(?:[^\/\s]+\/)+[^\s]+)/g,
+    normalize: (value) => value.trim()
+  },
+  {
+    type: 'FILE',
+    pattern: /\b[A-Za-z0-9._-]+\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?)\b/gi,
+    normalize: (value) => value.trim().toLowerCase()
+  },
+  {
+    type: 'ISSUE',
+    pattern: /\b(?:#\d{4,}|\d{6,})\b/g,
+    normalize: (value) => value.trim()
+  },
+  {
+    type: 'VERSION',
+    pattern: /\b(?:v?\d+(?:\.\d+){1,3}(?:\s*build\s*\d+)?)\b/gi,
+    normalize: (value) => value.trim().toLowerCase().replace(/\s+/g, ' ')
+  }
+];
 
 const elements = {
   inputText: document.getElementById('inputText'),
@@ -23,54 +67,28 @@ const elements = {
   sampleBtn: document.getElementById('sampleBtn'),
   addRuleBtn: document.getElementById('addRuleBtn'),
   customRules: document.getElementById('customRules'),
+  patternRules: document.getElementById('patternRules'),
   mappingTableBody: document.getElementById('mappingTableBody'),
   statusMessage: document.getElementById('statusMessage')
 };
 
-const maskRules = [
-  {
-    type: 'EMAIL',
-    pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
-  },
-  {
-    type: 'IP',
-    pattern: /\b(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}\b/g
-  },
-  {
-    type: 'SN',
-    pattern: /\bSN[A-Z0-9-]{6,}\b/gi
-  },
-  {
-    type: 'PATH',
-    pattern: /(?:[A-Za-z]:\\(?:[^\\\r\n]+\\)*[^\\\r\n]*|\/(?:[^\s/:]+\/)+[^\s]+|\/Users\/(?:[^\/\s]+\/)+[^\s]+)/g
-  },
-  {
-    type: 'FILE',
-    pattern: /\b[A-Za-z0-9._-]+\.(?:txt|log|csv|json|xml|zip|7z|pdf|docx?|xlsx?|pptx?)\b/gi
-  },
-  {
-    type: 'ISSUE',
-    pattern: /\b(?:#\d{4,}|\d{6,})\b/g
-  },
-  {
-    type: 'VERSION',
-    pattern: /\b(?:v?\d+(?:\.\d+){1,3}(?:\s*build\s*\d+)?)\b/gi
-  }
-];
-
 let customRuleCount = 0;
+let patternRuleCount = 0;
 
 initialize();
 
 function initialize() {
-  addCustomRuleRow('FG-123G', 'MODEL-A');
-  addCustomRuleRow('FLEX', 'FACTORY-A');
+  attachEvents();
+  resetRuleEditors();
+}
 
+function attachEvents() {
   elements.maskBtn.addEventListener('click', handleMask);
   elements.copyBtn.addEventListener('click', copyResult);
   elements.clearBtn.addEventListener('click', clearAll);
   elements.sampleBtn.addEventListener('click', loadSample);
   elements.addRuleBtn.addEventListener('click', () => addCustomRuleRow('', ''));
+  document.getElementById('addPatternBtn').addEventListener('click', () => addPatternRuleRow('', ''));
 }
 
 function handleMask() {
@@ -78,6 +96,7 @@ function handleMask() {
   const workingState = createWorkingState();
 
   let maskedText = applyCustomRules(originalText, workingState);
+  maskedText = applyPatternRules(maskedText, workingState);
   maskedText = applyAutoRules(maskedText, workingState);
 
   elements.outputText.value = maskedText;
@@ -116,15 +135,35 @@ function applyCustomRules(text, state) {
   let result = text;
 
   rules.forEach((rule) => {
-    const originalValue = rule.source;
-    const label = rule.label;
+    const key = rule.source;
+    if (!state.mappingByType.CUSTOM.has(key)) {
+      state.mappingByType.CUSTOM.set(key, rule.label);
+      state.mappingEntries.push({ type: 'CUSTOM', original: rule.source, masked: rule.label });
+    }
+    result = replaceLiteral(result, rule.source, rule.label, rule.ignoreCase);
+  });
 
-    if (!state.mappingByType.CUSTOM.has(originalValue)) {
-      state.mappingByType.CUSTOM.set(originalValue, label);
-      state.mappingEntries.push({ type: 'CUSTOM', original: originalValue, masked: label });
+  return result;
+}
+
+function applyPatternRules(text, state) {
+  const rules = getPatternRules();
+  let result = text;
+
+  rules.forEach((rule) => {
+    const compiled = buildPatternRegex(rule.pattern);
+    if (!compiled) {
+      return;
     }
 
-    result = replaceLiteral(result, originalValue, label);
+    result = result.replace(compiled.regex, (match) => {
+      const normalizedKey = `${rule.pattern}::${match.trim().toUpperCase()}`;
+      if (!state.mappingByType.CUSTOM.has(normalizedKey)) {
+        state.mappingByType.CUSTOM.set(normalizedKey, rule.label);
+        state.mappingEntries.push({ type: 'CUSTOM', original: match, masked: rule.label });
+      }
+      return rule.label;
+    });
   });
 
   return result;
@@ -134,24 +173,62 @@ function applyAutoRules(text, state) {
   let result = text;
 
   maskRules.forEach((rule) => {
+    if (rule.type === 'PATH') {
+      result = replacePathsWithFileAwareness(result, rule, state);
+      return;
+    }
+
     result = result.replace(rule.pattern, (match) => {
-      const normalized = match.trim();
-      return getOrCreateLabel(rule.type, normalized, state);
+      const normalizedValue = rule.normalize ? rule.normalize(match) : match.trim();
+      return getOrCreateLabel(rule.type, normalizedValue, match, state);
     });
   });
 
   return result;
 }
 
-function getOrCreateLabel(type, originalValue, state) {
-  if (state.mappingByType[type].has(originalValue)) {
-    return state.mappingByType[type].get(originalValue);
+function replacePathsWithFileAwareness(text, rule, state) {
+  return text.replace(rule.pattern, (match) => {
+    const cleanedMatch = match.trim();
+    const splitPath = splitPathAndTrailingFile(cleanedMatch);
+
+    if (!splitPath.fileName) {
+      const normalizedValue = rule.normalize ? rule.normalize(cleanedMatch) : cleanedMatch;
+      return getOrCreateLabel(rule.type, normalizedValue, cleanedMatch, state);
+    }
+
+    const pathLabel = getOrCreateLabel(rule.type, splitPath.directory, splitPath.directory, state);
+    const fileLabel = getOrCreateLabel('FILE', splitPath.fileName.toLowerCase(), splitPath.fileName, state);
+    return `${pathLabel}${splitPath.separator}${fileLabel}`;
+  });
+}
+
+function splitPathAndTrailingFile(pathValue) {
+  const separatorIndex = Math.max(pathValue.lastIndexOf('\\\\'), pathValue.lastIndexOf('/'));
+  if (separatorIndex === -1) {
+    return { directory: pathValue, fileName: '', separator: '' };
+  }
+
+  const directory = pathValue.slice(0, separatorIndex);
+  const separator = pathValue.slice(separatorIndex, separatorIndex + 1);
+  const fileName = pathValue.slice(separatorIndex + 1);
+
+  if (!/\.[A-Za-z0-9]{1,8}$/.test(fileName)) {
+    return { directory: pathValue, fileName: '', separator: '' };
+  }
+
+  return { directory, fileName, separator };
+}
+
+function getOrCreateLabel(type, key, originalValue, state) {
+  if (state.mappingByType[type].has(key)) {
+    return state.mappingByType[type].get(key);
   }
 
   const label = generateLabel(type, state.typeCounters[type]);
   state.typeCounters[type] += 1;
-  state.mappingByType[type].set(originalValue, label);
-  state.mappingEntries.push({ type, original: originalValue, masked: label });
+  state.mappingByType[type].set(key, label);
+  state.mappingEntries.push({ type, original: originalValue.trim(), masked: label });
   return label;
 }
 
@@ -187,15 +264,12 @@ function clearAll() {
   elements.outputText.value = '';
   elements.mappingTableBody.innerHTML = '<tr><td colspan="3" class="empty">No mapping generated yet.</td></tr>';
   elements.statusMessage.textContent = '';
-  elements.customRules.innerHTML = '';
-  customRuleCount = 0;
+  resetRuleEditors();
 }
 
 function loadSample() {
   clearAll();
   elements.inputText.value = sampleEmail;
-  addCustomRuleRow('FG-123G', 'MODEL-A');
-  addCustomRuleRow('FLEX', 'FACTORY-A');
   setStatus('Sample email loaded with fake data.');
 }
 
@@ -215,23 +289,59 @@ async function copyResult() {
   }
 }
 
+function resetRuleEditors() {
+  elements.customRules.innerHTML = '';
+  elements.patternRules.innerHTML = '';
+  customRuleCount = 0;
+  patternRuleCount = 0;
+
+  addCustomRuleRow('FG-123G', 'MODEL-A');
+  addCustomRuleRow('FLEX', 'FACTORY-A');
+  presetPatternRules.forEach((rule) => addPatternRuleRow(rule.pattern, rule.replacement));
+}
+
 function addCustomRuleRow(source = '', label = '') {
   customRuleCount += 1;
+  const row = createRuleRow({
+    rowId: customRuleCount,
+    sourcePlaceholder: 'Original string',
+    labelPlaceholder: 'Replacement label',
+    sourceValue: source,
+    labelValue: label,
+    ignoreCase: true
+  });
+  elements.customRules.appendChild(row);
+}
 
+function addPatternRuleRow(pattern = '', label = '') {
+  patternRuleCount += 1;
+  const row = createRuleRow({
+    rowId: `pattern-${patternRuleCount}`,
+    sourcePlaceholder: 'Pattern e.g. FG-350xG',
+    labelPlaceholder: 'Replacement label',
+    sourceValue: pattern,
+    labelValue: label,
+    ignoreCase: true,
+    helperText: 'x matches one alphanumeric character. Example: FG-350xG matches FG-3500G / FG-3501G.'
+  });
+  elements.patternRules.appendChild(row);
+}
+
+function createRuleRow(options) {
   const row = document.createElement('div');
   row.className = 'rule-row';
-  row.dataset.rowId = String(customRuleCount);
+  row.dataset.rowId = String(options.rowId);
 
   const sourceInput = document.createElement('input');
   sourceInput.type = 'text';
-  sourceInput.placeholder = 'Original string';
-  sourceInput.value = source;
+  sourceInput.placeholder = options.sourcePlaceholder;
+  sourceInput.value = options.sourceValue || '';
   sourceInput.className = 'custom-source';
 
   const labelInput = document.createElement('input');
   labelInput.type = 'text';
-  labelInput.placeholder = 'Replacement label';
-  labelInput.value = label;
+  labelInput.placeholder = options.labelPlaceholder;
+  labelInput.value = options.labelValue || '';
   labelInput.className = 'custom-label';
 
   const removeButton = document.createElement('button');
@@ -243,7 +353,16 @@ function addCustomRuleRow(source = '', label = '') {
   row.appendChild(sourceInput);
   row.appendChild(labelInput);
   row.appendChild(removeButton);
-  elements.customRules.appendChild(row);
+
+  if (options.helperText) {
+    const helper = document.createElement('p');
+    helper.className = 'rule-helper';
+    helper.textContent = options.helperText;
+    row.appendChild(helper);
+  }
+
+  row.dataset.ignoreCase = options.ignoreCase ? 'true' : 'false';
+  return row;
 }
 
 function getCustomRules() {
@@ -252,14 +371,40 @@ function getCustomRules() {
   return rows
     .map((row) => ({
       source: row.querySelector('.custom-source').value.trim(),
-      label: row.querySelector('.custom-label').value.trim()
+      label: row.querySelector('.custom-label').value.trim(),
+      ignoreCase: row.dataset.ignoreCase === 'true'
     }))
     .filter((rule) => rule.source && rule.label)
     .sort((a, b) => b.source.length - a.source.length);
 }
 
-function replaceLiteral(text, source, replacement) {
-  return text.replace(new RegExp(escapeRegExp(source), 'g'), replacement);
+function getPatternRules() {
+  const rows = Array.from(elements.patternRules.querySelectorAll('.rule-row'));
+
+  return rows
+    .map((row) => ({
+      pattern: row.querySelector('.custom-source').value.trim(),
+      label: row.querySelector('.custom-label').value.trim()
+    }))
+    .filter((rule) => rule.pattern && rule.label)
+    .sort((a, b) => b.pattern.length - a.pattern.length);
+}
+
+function buildPatternRegex(patternText) {
+  const trimmed = patternText.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const escaped = escapeRegExp(trimmed).replace(/x/gi, '[A-Za-z0-9]');
+  return {
+    regex: new RegExp(`\\b${escaped}\\b`, 'gi')
+  };
+}
+
+function replaceLiteral(text, source, replacement, ignoreCase) {
+  const flags = ignoreCase ? 'gi' : 'g';
+  return text.replace(new RegExp(escapeRegExp(source), flags), replacement);
 }
 
 function escapeRegExp(value) {
